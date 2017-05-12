@@ -80,7 +80,7 @@ int main(){
   mu = visc;
   alpha = alphav;
   //f12.sigma = 1000;
-  f23.sigma = SURF;
+  //f23.sigma = SURF;
   init_grid(1<<MAXLEVEL);
   run();
 }
@@ -149,7 +149,7 @@ event moving_blister (i++) {
 
     
     // No slip for the BC at the interface beyond the blister
-    if( (y>R0) && (f12[]>0.0)  ){
+    if( (y>R0) && (x<LS)  ){
       u.x[] = 0.0;
       u.y[] = 0.0;
     }
