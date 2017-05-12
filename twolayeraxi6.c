@@ -75,7 +75,7 @@ u.n[top] = neumann(0.0);
 
 int main(){
   L0 = 2.0; // domain size
-  //DT = 0.001;
+  DT = 0.025*TAU;
   origin(0.0, 0.0);
   mu = visc;
   alpha = alphav;
