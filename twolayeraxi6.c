@@ -49,8 +49,8 @@ double LF = HFABS/LSCALE;
 double CBLISTER = 1.25;
 //#define CALCMU(f12,f23) ( (MUA*(1-f23)*(1-f12)) + (MUL*f23) + (MUS*f12)   )
 //#define CALCRHO(f12,f23) ( (RHOA*(1-f23)*(1-f12)) + (RHOL*f23) + (RHOS*f12)  )
-#define CALCRHO(f12,f23) ( (RHOA*(1-f23)) + (RHOL*f23)  )
-#define CALCMU(f12,f23) (  (MUA*(1-f23) ) + (MUL*f23) )
+#define CALCRHO(f23) ( (RHOA*(1-f23)) + (RHOL*f23)  )
+#define CALCMU(f23) (  (MUA*(1-f23) ) + (MUL*f23) )
 
 
 
@@ -119,7 +119,7 @@ event init (t=0){
   }
 
   static FILE *fp = fopen("configuration.txt", "w");
-  fprintf(fp, "%g %g %g %g %g \n", TAU, TSCALE, LSCALE,  H0, H0*(2.0/M_PI)*atan(2));
+  fprintf(fp, "%g %g %g %g %g \n", TAU, TSCALE, LSCALE,  H0, LS+H0*(2.0/M_PI)*atan(2));
   fclose(fp);
     
 }
@@ -179,11 +179,11 @@ event moving_blister (i++) {
 // material properties
 
   foreach_face(){
-    double T12 = (f12[] + f12[-1,0])/2.;
+    //double T12 = (f12[] + f12[-1,0])/2.;
     double T23 = (f23[] + f23[-1,0])/2.;
 
-    visc.x[] = CALCMU(T12,T23);
-    alphav.x[] = 1./CALCRHO(T12,T23);
+    visc.x[] = CALCMU(T23);
+    alphav.x[] = 1./CALCRHO(T23);
   }
 
 
@@ -278,7 +278,8 @@ event images (t += 0.1*TAU; t<=10.0*TAU){
 }
 
 // output of the blister profile
-event output (t+=0.001; t<=0.2){
+//event output (t+=0.001; t<=0.2){
+event output (t+=0.025*TAU; t<=5*TAU){
   static int nf= 0;
   char name[100];
   sprintf(name,"blister_%d.dat",nf);
