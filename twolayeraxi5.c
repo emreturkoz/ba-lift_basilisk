@@ -68,22 +68,10 @@ face vector alphav[];
 
 
 u.n[left] = neumann (0.0);
-u.t[left] = dirichlet(0.0);
-
 u.n[right] = dirichlet(0.0);
-//u.n[right] = neumann(0.0);
-
 u.n[top] = neumann(0.0);
 
-//u.t[top] = dirichlet(0.0);
-//u.n[bottom] = dirichlet (0.0);
 
-
-//p[top] = dirichlet(0.0);
-//pf[top] = dirichlet(0.0);
-//p[bottom] = neumann (0.0);
-//p[left] = dirichlet(0.0);
-//p[bottom] = dirichlet(0.0);
 
 int main(){
   L0 = 2.0; // domain size
@@ -146,13 +134,18 @@ event moving_blister (i++) {
   if(t>2*TAU)
     fraction (f12, ((-LS  + (H0*pow( 1.0 - ((y)*(y)/(R0*R0)),CBLISTER )*(2.0/M_PI)*atan(2)))) );
 
+
+
+
+
+  
   foreach(){
-    // Velocity BC on the blister. 
+      // Velocity BC on the blister. 
     if( (t<=2.0*TAU) && (y<=R0) && (f12[]>0.0) ){      
       u.y[] = 0.0;
       u.x[] = f12[]*H0*pow( 1- (y*y)/(R0*R0), CBLISTER)*(2.0/(M_PI*TAU*(1+ (t*t/TAU/TAU))) );
       //p[] = 0.0;
-    }
+      }
 
     
     // No slip for the BC at the interface beyond the blister
