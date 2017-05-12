@@ -80,7 +80,7 @@ int main(){
   mu = visc;
   alpha = alphav;
   //f12.sigma = 1000;
-  //f23.sigma = SURF;
+  f23.sigma = SURF;
   init_grid(1<<MAXLEVEL);
   run();
 }
@@ -119,7 +119,7 @@ event init (t=0){
   }
 
   static FILE *fp = fopen("configuration.txt", "w");
-  fprintf(fp, "%g %g %g %g %g \n", TAU, TSCALE, VELBLISTER,  VELSCALE, WeEXP);
+  fprintf(fp, "%g %g %g %g %g \n", TAU, TSCALE, LSCALE,  H0, H0*(2.0/M_PI)*atan(2));
   fclose(fp);
     
 }
