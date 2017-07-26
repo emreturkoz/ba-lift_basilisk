@@ -1,0 +1,99 @@
+# GfsView 2D
+View {
+  tx = -0.289549 ty = 0.347889
+  sx = 1 sy = 1 sz = 1
+  q0 = 0 q1 = 0 q2 = -0.999997 q3 = -0.000876843
+  fov = 9.90898
+  r = 0.3 g = 0.4 b = 0.6
+  res = 1
+  lc = 0.001
+  reactivity = 0.1
+}
+Linear {
+  r = 1 g = 1 b = 1
+  shading = Constant
+  maxlevel = -1
+  font_size = 1
+  raster_font = 1
+  line_width = 1
+} {
+  n.x = 0 n.y = 0 n.z = 1
+  pos = 0
+} f23*sqrt(u_y*u_y+u_x*u_x) {
+  amin = 0 min = 0
+  amax = 0 max = 123.701
+  show = 1
+  cmap = Jet
+} 0 {
+  reversed = 0
+  use_scalar = 1
+}
+Isoline {
+  r = 0 g = 0 b = 0
+  shading = Constant
+  maxlevel = -1
+  font_size = 1
+  raster_font = 1
+  line_width = 2
+} {
+  n.x = 0 n.y = 0 n.z = 1
+  pos = 0
+} f23 {
+  amin = 1
+  amax = 1
+  cmap = Jet
+} 0 {
+  reversed = 0
+  use_scalar = 1
+} {
+  n = 1
+}
+Isoline {
+  r = 0 g = 0 b = 0
+  shading = Constant
+  maxlevel = -1
+  font_size = 1
+  raster_font = 1
+  line_width = 2
+} {
+  n.x = 0 n.y = 0 n.z = 1
+  pos = 0
+} f12 {
+  amin = 1
+  amax = 1
+  cmap = Jet
+} 0 {
+  reversed = 0
+  use_scalar = 1
+} {
+  n = 1
+}
+Cells {
+  r = 0 g = 0 b = 0
+  shading = Constant
+  maxlevel = -1
+  font_size = 1
+  raster_font = 1
+  line_width = 1
+} {
+  n.x = 0 n.y = 0 n.z = 1
+  pos = 0
+}
+Vectors {
+  r = 0 g = 0 b = 0
+  shading = Constant
+  maxlevel = 5
+  font_size = 1
+  raster_font = 1
+  line_width = 1
+} {
+  n.x = 0 n.y = 0 n.z = 1
+  pos = 0
+} P {
+  amin = 1
+  amax = 1
+  cmap = Jet
+} u_x u_y {
+  scale = 0.1
+  use_scalar = 0
+}
