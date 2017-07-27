@@ -1,18 +1,43 @@
 figure(1)
 clf
 hold all
-for i=20:40:260
-a=sprintf('jet_%d.dat',i);%,l);
+
+low_limit = 40;
+increment = 40;
+high_limit = 560;
+subplot_count = (high_limit - low_limit)/increment + 1;
+
+k = 1;
+
+
+
+subplot_row_count = 1;
+subplot_col_count = subplot_count;
+if(mod(subplot_count,2) == 0 )
+    subplot_row_count = 2;
+    subplot_col_count = subplot_count/2;
+end
+
+length_scale = 27.6573; % in microns
+solid_thickness = 3.0; % in microns
+
+for i=low_limit:increment:high_limit
+a=sprintf('twolayeraxi14/jet_%d.dat',i);%,l);
           dat = load(a);
-          y=dat(:,1);
+          y=dat(:,1) - (solid_thickness/length_scale);
           x=dat(:,2);
          
-         
-          plot(x,-y,'.')
-         
+          subplot(subplot_row_count,subplot_col_count,k)
+          plot(length_scale.*x,-length_scale.*y,'b.')
+          hold on
+          plot(-length_scale.*x,-length_scale.*y,'b.')
+          k = k+ 1;
+          axis([-length_scale length_scale -3*length_scale 0])
+          pbaspect([1 1.5 1])
+          title_time = sprintf('t = %dτ_b',i);
+          title(title_time)
+
 end
-axis([0 1 -3 0])
-pbaspect([1 3 1])
 % 
 % for i=0:0.1:1
 %     
