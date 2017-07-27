@@ -29,7 +29,7 @@ scalar *interfaces = {f12, f23};
 // Experimental Ohnesorge number assuming that the forcing does not matter
 #define OHEXP (MULABS/sqrt(RHOLABS*SURFABS*R0ABS))
 
-#define R0 0.75
+#define R0 0.6
 #define LSCALE (R0ABS/R0)
 #define H0 (H0ABS/LSCALE)
 #define TSCALE (LSCALE)
@@ -57,16 +57,16 @@ scalar *interfaces = {f12, f23};
 double LS = HSABS/LSCALE;
 double LF = HFABS/LSCALE; 
 double CBLISTER = 1.25;
-#define CALCMU(f12) ( MUA*(1-f12) + (MUL*f12)   )
-//#define CALCRHO(f12,f23) ( (RHOA*(1-f23)*(1-f12)) + (RHOL*f23) + (RHOS*f12)  )
-#define CALCRHO(f12) ( (RHOA*(1-f12)) + (RHOL*f12) )
-//#define CALCMU(f23) (  (MUA*(1-f23) ) + (MUL*f23) )
+//#define CALCMU(f12) ( MUA*(1-f12) + (MUL*f12)   )
+#define CALCRHO(f12,f23) ( (RHOA*(1-f23)*(1-f12)) + (RHOL*f23) + (RHOS*f12)  )
+//#define CALCRHO(f12) ( (RHOA*(1-f12)) + (RHOL*f12) )
+#define CALCMU(f23) (  (MUA*(1-f23) ) + (MUL*f23) )
 
 
 
 
 
-int MAXLEVEL = 6;
+int MAXLEVEL = 7;
 
 
 vertex scalar psi12[];
@@ -75,11 +75,17 @@ face vector visc[];
 face vector alphav[];
 
 
+/*
+u.n[left] = neumann(0.0);
+uf.n[right] = dirichlet(0.0);
+uf.n[top] = dirichlet(0.0);
+uf.n[bottom] = dirichlet(0.0);
+u.n[bottom] = dirichlet(0.0);
+*/
+
 
 u.n[left] = neumann(0.0);
-//u.t[left] = dirichlet(0.0);
 u.n[right] = neumann(0.0);
-//u.n[right] = dirichlet(0.0);
 u.n[top] = neumann(0.0);
 
 
@@ -92,10 +98,11 @@ u.n[bottom] = dirichlet(0.0);
 
 
 int main(){
-  L0 = 1.0; // domain size
+  L0 = 3.0; // domain size
   //DT = 1e-9;
-  DT = 0.05*TAU;
+  DT = 0.1*TAU;
   //origin(0.0, 0.0);
+  f23.sigma = SURF;
   mu = visc;
   alpha = alphav;
   init_grid(1<<MAXLEVEL);
@@ -111,23 +118,12 @@ event init (t=0){
     u.x[] = 0.0;
   }
 
-  // addition of the second layer (the only difference btw. onelayeraxi1.c and this file)
-    // initialize the second fluid layer
-  
- /*
- foreach_vertex(){
-    if ( (x>LS) && x<(LS+LF)  ) 
-      psi23[] = -x + LS + LF;
-    else
-      psi23[] = -x;
-  }
-  //fractions(psi23, f23);
-  */
 
+
+
+  // addition of the second layer (the only difference btw. onelayeraxi1.c and this file) 
   fraction(f23, (+LS + LF- x));
 
-  // the blister layer
-  //fraction(f12, (+LS  - x)); 
 
 
 
@@ -175,7 +171,7 @@ event moving_blister (i++) {
 
     // After the blister expansion stops - > no slip bc
     
-    if( (t > 2.0*TAU) && (y<=R0) &&  (x < LS+ (f12[])*(H0*pow( 1.0 - ((y)*(y)/(R0*R0)),CBLISTER )*(2.0/M_PI)*atan(t/TAU))) ){
+    if( (t > 2.0*TAU) && (y<=R0) &&  (x < LS+ (H0*pow( 1.0 - ((y)*(y)/(R0*R0)),CBLISTER )*(2.0/M_PI)*atan(t/TAU))) ){
     u.x[] = 0.0;
     u.y[] = 0.0;
     }
@@ -193,16 +189,17 @@ event moving_blister (i++) {
 
   foreach_face(){
     double T12 = (f12[] + f12[-1,0])/2.;
+    double T23 = (f23[] + f23[-1,0])/2.;
  
-    visc.x[] = CALCMU(T12);
-    alphav.x[] = 1./CALCRHO(T12);
+    visc.x[] = fm.x[]*CALCMU(T23);
+    alphav.x[] = fm.x[]/CALCRHO(T12,T23);
   }
 
 
 }
 
 
-event gfsview (i += 1; t <= 100*TAU) {
+event gfsview (i += 10; t <= 2000*TAU) {
   static FILE * fp = popen ("gfsview2D velocity.gfv", "w");
   scalar omega[];
   vorticity (u, omega);  
@@ -217,6 +214,10 @@ event gfsview (i += 1; t <= 100*TAU) {
 
   
 
+}
+
+event adapt (i++) {
+  adapt_wavelet ({f23,u}, (double[]){5e-4,1e-4,1e-4}, MAXLEVEL+1);
 }
 
 
@@ -268,8 +269,8 @@ event output (t += 0.1*TAU; t<=2.1*TAU){
 
 
 
-/*
-event output (t += 0.1*TAU; t<=2.1*TAU){
+
+event jet_output (t += 20*TAU; t<=400.0*TAU){
   static int nf= 0;
   char name[100];
   sprintf(name,"jet_%g.dat",t/TAU);
@@ -278,6 +279,6 @@ event output (t += 0.1*TAU; t<=2.1*TAU){
   fclose(fp);
   nf++;
   }
-*/
+
 
 
