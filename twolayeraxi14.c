@@ -4,14 +4,20 @@
 #include "vof.h"
 #include "tension.h"
 
+#include "tag.h"
+#include "distance.h"
+
+//#include "bubbleShape.h"
+#include "drop_stat.h"
+
 
 scalar f12[], f23[];
 scalar psi23[];
 scalar *interfaces = {f12, f23};
 
 #define TAUABS 23.49E-9
-#define H0ABS 4.5963E-6
-#define R0ABS 17.9979E-6
+#define H0ABS 4.8430E-6
+#define R0ABS 18.3244E-6
 
 #define RHOLABS 1030.
 #define MULABS 1.7E-3
@@ -29,7 +35,7 @@ scalar *interfaces = {f12, f23};
 // Experimental Ohnesorge number assuming that the forcing does not matter
 #define OHEXP (MULABS/sqrt(RHOLABS*SURFABS*R0ABS))
 
-#define R0 0.6
+#define R0 0.7
 #define LSCALE (R0ABS/R0)
 #define H0 (H0ABS/LSCALE)
 #define TSCALE (LSCALE)
@@ -66,7 +72,7 @@ double CBLISTER = 1.25;
 
 
 
-int MAXLEVEL = 7;
+int MAXLEVEL = 8;
 
 
 vertex scalar psi12[];
@@ -98,7 +104,7 @@ u.n[bottom] = dirichlet(0.0);
 
 
 int main(){
-  L0 = 3.0; // domain size
+  L0 = 4.0; // domain size
   //DT = 1e-9;
   DT = 0.1*TAU;
   //origin(0.0, 0.0);
@@ -125,7 +131,8 @@ event init (t=0){
   fraction(f23, (+LS + LF- x));
 
 
-
+  refine ( x < 2.0  && level < MAXLEVEL + 1);
+  refine ( y < 0.5  && level < MAXLEVEL + 1);
 
  
   static FILE *fp = fopen("configuration.txt", "w");
@@ -195,6 +202,82 @@ event moving_blister (i++) {
     alphav.x[] = fm.x[]/CALCRHO(T12,T23);
   }
 
+// remove small droplets
+  remove_droplets(f23, 3, true);
+
+// tagging and calculation of volumes
+
+  scalar m[];
+  foreach()
+    m[] = f23[] > 1.5e-1;
+  int n = tag(m);
+
+   /**
+  We tag the droplet, when there is some.*/
+
+  double volume_[n];
+  coord b[n];
+  double dropVelo[n];
+
+  for (int j = 0; j < n; j++)
+    dropVelo[j] = volume_[j] = b[j].x = b[j].y = b[j].z = 0.;
+
+  foreach_leaf()
+    if (m[] > 0) {
+      int j = m[] - 1;
+      volume_[j] += dv()*f23[];
+      dropVelo[j] += dv()*f23[]*u.x[];
+      coord p = {x,y,z};
+      foreach_dimension()
+      b[j].x += dv()*f23[]*p.x;
+    }
+
+
+  /**
+  We compute the droplets velocity. We need at least 2 steps with a droplet to 
+  have a correct velocity. We add for that an extra variable, which is 
+  counting the number of steps with the presence of a drop. We also compute 
+  the volume of the first drop.*/
+
+  double xDrop, volume = 0, radius;
+  double xDropMax = -HUGE;
+
+  for (int j = 1; j < n; j++) {
+
+    /**
+    Computation of the drop velocity, and the drop position.*/
+
+    xDrop = b[j].x/volume_[j];
+
+    /**     
+    We will only select the highest drop, since we are only interested
+    into the first droplet production.*/
+
+    //if (xDrop>xDropMax) {
+      //xDropMax = xDrop;
+      /**
+      Computation of the drop radius.*/ 
+
+      volume = volume_[j];
+      radius = sqrt(2*volume/M_PI);
+      printf ("drop information: %g %g %d\n", 
+       volume, radius, n);
+
+    //}
+  }
+
+
+  /*
+  double minCellSize = L0/(1<<MAXLEVEL);
+  
+  if (volume > 4*sq(minCellSize)) {
+    printf ("drop information: %g %g %d\n", 
+       volume, radius, n);
+  }
+ */
+  fflush (stdout);
+
+
 
 }
 
@@ -216,10 +299,11 @@ event gfsview (i += 10; t <= 2000*TAU) {
 
 }
 
+/*
 event adapt (i++) {
   adapt_wavelet ({f23,u}, (double[]){5e-4,1e-4,1e-4}, MAXLEVEL+1);
 }
-
+*/
 
 event images (t += 0.1*TAU; t<=5.0*TAU){
   static FILE * fp = fopen("f12.ppm", "w");
@@ -270,7 +354,7 @@ event output (t += 0.1*TAU; t<=2.1*TAU){
 
 
 
-event jet_output (t += 20*TAU; t<=400.0*TAU){
+event jet_output (t += 20*TAU; t<=2000.0*TAU){
   static int nf= 0;
   char name[100];
   sprintf(name,"jet_%g.dat",t/TAU);
