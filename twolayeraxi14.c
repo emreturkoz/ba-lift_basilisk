@@ -282,7 +282,7 @@ event moving_blister (i++) {
 
 
 event gfsview (i += 10; t <= 2000*TAU) {
-  static FILE * fp = popen ("gfsview2D velocity.gfv", "w");
+  static FILE * fp = popen ("gfsview2D f23velocity_longdomain.gfv", "w");
   scalar omega[];
   vorticity (u, omega);  
   
