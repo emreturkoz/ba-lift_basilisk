@@ -16,8 +16,8 @@ scalar psi23[];
 scalar *interfaces = {f12, f23};
 
 #define TAUABS 23.49E-9
-#define H0ABS 4.8430E-6
-#define R0ABS 18.3244E-6
+#define H0ABS 6.5651E-6
+#define R0ABS 20.4582E-6
 
 #define RHOLABS 1030.
 #define MULABS 1.7E-3
@@ -91,7 +91,7 @@ u.n[bottom] = dirichlet(0.0);
 
 
 u.n[left] = neumann(0.0);
-u.n[right] = neumann(0.0);
+u.n[right] = dirichlet(0.0);
 u.n[top] = neumann(0.0);
 
 
@@ -104,7 +104,7 @@ u.n[bottom] = dirichlet(0.0);
 
 
 int main(){
-  L0 = 4.0; // domain size
+  L0 = 8.0; // domain size
   //DT = 1e-9;
   DT = 0.1*TAU;
   //origin(0.0, 0.0);
@@ -131,10 +131,9 @@ event init (t=0){
   fraction(f23, (+LS + LF- x));
 
 
-  refine ( x < 2.0  && level < MAXLEVEL + 1);
-  refine ( y < 0.5  && level < MAXLEVEL + 1);
+  refine ( x < 1.0  && level < MAXLEVEL + 2);
+  refine ( y < 0.35  && level < MAXLEVEL + 2);
 
- 
   static FILE *fp = fopen("configuration.txt", "w");
   fprintf(fp, "%g %g %g %g %g \n", TAU, TSCALE, LSCALE,  H0, LS+H0*(2.0/M_PI)*atan(2));
   fclose(fp);
@@ -203,7 +202,7 @@ event moving_blister (i++) {
   }
 
 // remove small droplets
-  remove_droplets(f23, 3, true);
+  //remove_droplets(f23, 3, true);
 
 // tagging and calculation of volumes
 
